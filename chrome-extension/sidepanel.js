@@ -792,5 +792,5 @@ function showStatus(message, type) {
 
 async function getAppUrl() {
   const result = await chrome.storage.sync.get(['mindCraftUrl']);
-  return result.mindCraftUrl || 'http://localhost:3000';
+  return result.mindCraftUrl || 'https://mind-craft-deploy.vercel.app';
 }

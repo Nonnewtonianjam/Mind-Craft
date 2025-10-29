@@ -76,7 +76,7 @@ npm run dev
 ```
 
 4. **Open the app**
-Navigate to [http://localhost:3000/flow](http://localhost:3000/flow)
+Navigate to [https://mind-craft-deploy.vercel.app](https://mind-craft-deploy.vercel.app)
 
 ### Chrome Extension Setup
 
