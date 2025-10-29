@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .session-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #ffffff;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #openApp {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      padding: 4px;
+    }
+
+    #openApp img {
+      width: 20px;
+      height: 20px;
+      filter: brightness(0) invert(1);
+    }
+
+    #openApp:hover {
+      background: #1d4ed8;
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    #openApp:active {
+      transform: scale(0.95);
+    }
+
+    .session-badge {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Quick Capture Section */
+    .quick-capture-section {
+      padding: 16px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    button {
+      padding: 8px 10px;
+      background: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+      padding: 6px 12px;
+      font-size: 11px;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    /* History Section - Scrollable */
+    .history-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f9fafb;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 10px 20px;
+      background: #f9fafb;
+      flex-shrink: 0;
+    }
+
+    .history-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px 16px 20px;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    /* Node List */
+    .node-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .node-item {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .node-item:hover {
+      border-color: #2563eb;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+    }
+
+    .node-item:hover .delete-x {
+      opacity: 1;
+    }
+
+    .node-item.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .node-item.merge-mode {
+      cursor: pointer;
+      padding-left: 40px;
+    }
+
+    .node-checkbox {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .delete-x {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.15s ease;
+      padding: 0;
+    }
+
+    .delete-x:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .node-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding-right: 24px;
+    }
+
+    .node-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #f3f4f6;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .ai-badge {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .node-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 6px;
+      line-height: 1.4;
+      padding-right: 24px;
+    }
+
+    .node-content-text {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .node-meta {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    /* Custom Note Section - Bottom */
+    .note-section {
+      padding: 16px 20px;
+      background: #ffffff;
+      border-top: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .node-input-wrapper {
+      position: relative;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      transition: all 0.15s ease;
+    }
+
+    .node-input-wrapper:focus-within {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .node-input-wrapper textarea {
+      width: 100%;
+      padding: 0;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-family: inherit;
+      color: #374151;
+      resize: none;
+      min-height: 60px;
+      outline: none;
+    }
+
+    .node-input-wrapper textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    .input-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .btn-add-node {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-add-node:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+
+    .btn-add-node:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    /* Merge Bar */
+    .merge-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1f2937;
+      color: #ffffff;
+      padding: 12px 20px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .merge-bar.active {
+      display: flex;
+    }
+
+    .merge-info {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .merge-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .merge-actions button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      opacity: 0.3;
+    }
+
+    .empty-text {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .empty-hint {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* CRITICAL FIX: Status Messages - Fixed positioning */
+    .status-message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      white-space: nowrap;
+      max-width: 90%;
+    }
+
+    .status-message.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .status-message.success {
+      background: #10b981;
+      color: white;
+    }
+
+    .status-message.error {
+      background: #ef4444;
+      color: white;
+    }
+
+    .status-message.info {
+      background: #3b82f6;
+      color: white;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f9fafb;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    /* Image Preview */
+    .node-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Session Badge -->
+  <div class="session-header">
+    <button id="openApp" title="Go to app">
+      <img src="icons/icon48.png" alt="Mind-Craft">
+    </button>
+    <div class="session-badge" id="sessionBadge">0 nodes</div>
+  </div>
+
+  <!-- Quick Capture Section -->
+  <div class="quick-capture-section">
+    <div class="section-label">Quick Capture</div>
+    <div class="button-grid">
+      <button id="captureSelection">
+        <span>Selection</span>
+      </button>
+      <button id="captureSummary">
+        <span>Page Summary</span>
+      </button>
+      <button id="captureTitle">
+        <span>Page Title</span>
+      </button>
+      <button id="captureScreenshot">
+        <span>Screenshot</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- History Section - Scrollable -->
+  <div class="history-section">
+    <div class="section-header">
+      <div class="section-label">Session History</div>
+      <button id="mergeBtn" class="btn-secondary">
+        <span>Merge</span>
+      </button>
+    </div>
+    <div class="history-scroll">
+      <div class="node-list" id="nodeList">
+        <div class="empty-state">
+          <div class="empty-icon">📦</div>
+          <div class="empty-text">No nodes yet</div>
+          <div class="empty-hint">Create or capture content to see it here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Note Section - Bottom -->
+  <div class="note-section">
+    <div class="section-label">Add Custom Note</div>
+    <div class="node-input-wrapper">
+      <textarea id="customText" placeholder="Type or paste text to add as a node..." rows="3"></textarea>
+      <div class="input-footer">
+        <button id="createNode" class="btn-add-node" title="Add Node">
+          <span>Add Node</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Merge Bar -->
+  <div class="merge-bar" id="mergeBar">
+    <div class="merge-info">
+      <span id="mergeCount">0</span> nodes selected
+    </div>
+    <div class="merge-actions">
+      <button id="cancelMerge" style="background: transparent; border-color: #ffffff; color: #ffffff;">
+        Cancel
+      </button>
+      <button id="confirmMerge" class="btn-primary">
+        Merge Selected
+      </button>
+    </div>
+  </div>
+
+  
+  <div class="status-message" id="statusMessage"></div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

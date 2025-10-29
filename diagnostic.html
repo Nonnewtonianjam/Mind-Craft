@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mind-Craft API Diagnostic</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1f2937;
+      color: #fff;
+    }
+    .section {
+      background: #374151;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    pre {
+      background: #1f2937;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success { color: #10b981; }
+    .error { color: #ef4444; }
+    .warning { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Mind-Craft API Diagnostic Tool</h1>
+  <p>This tool will test your API endpoints and show you exactly what's happening.</p>
+
+  <div class="section">
+    <h2>Step 1: Test Capture API (POST)</h2>
+    <button onclick="testCapturePost()">Send Test Capture</button>
+    <pre id="capturePostResult">Click button to test...</pre>
+  </div>
+
+  <div class="section">
+    <h2>Step 2: Check Direct Captures</h2>
+    <button onclick="testCaptureGet()">Get Direct Captures</button>
+    <pre id="captureGetResult">Click button to test...</pre>
+  </div>
+
+  <div class="section">
+    <h2>Step 3: Check Nodes API</h2>
+    <button onclick="testNodesGet()">Get Current Nodes</button>
+    <pre id="nodesGetResult">Click button to test...</pre>
+  </div>
+
+  <div class="section">
+    <h2>Step 4: Full Flow Test</h2>
+    <button onclick="testFullFlow()">Run Complete Flow</button>
+    <pre id="fullFlowResult">Click button to test...</pre>
+  </div>
+
+  <div class="section">
+    <h2>Step 5: Check Browser Console on Flow Page</h2>
+    <p class="warning">⚠️ Open http://localhost:3000/flow in another tab</p>
+    <p class="warning">⚠️ Open the browser console (F12) on that tab</p>
+    <p>Look for messages like:</p>
+    <ul>
+      <li>"Polling direct captures: X items" - Flow.js is polling</li>
+      <li>"Found new captures to process: X" - Flow.js found captures</li>
+      <li>"Creating node from capture:" - Flow.js is creating nodes</li>
+      <li>"Node created successfully" - Node was added to state</li>
+    </ul>
+    <p style="margin-top: 15px;">Or copy and run the "Quick Test Script" artifact directly in the Flow.js console!</p>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+    
+    // Note: Even though your app is at /flow, API routes should be at the root
+    // Next.js API routes are always at /api/* regardless of page routes
+
+    async function testCapturePost() {
+      const result = document.getElementById('capturePostResult');
+      result.textContent = 'Testing...';
+      
+      try {
+        const testData = {
+          id: `test-${Date.now()}`,
+          type: 'text',
+          content: 'This is a diagnostic test capture from the diagnostic tool.',
+          title: 'Diagnostic Test',
+          timestamp: new Date().toISOString(),
+          url: 'http://test.com',
+          sourceUrl: 'http://test.com',
+          weight: 5
+        };
+
+        console.log('Sending test capture:', testData);
+
+        const response = await fetch(`${API_BASE}/api/capture`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testData)
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = `<span class="success">✓ SUCCESS</span>\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+        } else {
+          result.innerHTML = `<span class="error">✗ FAILED</span>\n\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+        }
+      } catch (error) {
+        result.innerHTML = `<span class="error">✗ ERROR</span>\n\n${error.message}\n\nIs the web app running on localhost:3000?`;
+      }
+    }
+
+    async function testCaptureGet() {
+      const result = document.getElementById('captureGetResult');
+      result.textContent = 'Testing...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/capture?type=direct`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const count = data.items ? data.items.length : 0;
+          if (count > 0) {
+            result.innerHTML = `<span class="success">✓ FOUND ${count} CAPTURES</span>\n\n${JSON.stringify(data, null, 2)}`;
+          } else {
+            result.innerHTML = `<span class="warning">⚠️ NO CAPTURES FOUND</span>\n\nThis means captures aren't being stored or they've been consumed by Flow.js\n\n${JSON.stringify(data, null, 2)}`;
+          }
+        } else {
+          result.innerHTML = `<span class="error">✗ FAILED</span>\n\n${JSON.stringify(data, null, 2)}`;
+        }
+      } catch (error) {
+        result.innerHTML = `<span class="error">✗ ERROR</span>\n\n${error.message}`;
+      }
+    }
+
+    async function testNodesGet() {
+      const result = document.getElementById('nodesGetResult');
+      result.textContent = 'Testing...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/nodes`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const count = data.nodes ? data.nodes.length : 0;
+          if (count > 0) {
+            result.innerHTML = `<span class="success">✓ FOUND ${count} NODES</span>\n\n${JSON.stringify(data, null, 2)}`;
+          } else {
+            result.innerHTML = `<span class="warning">⚠️ NO NODES FOUND</span>\n\nFlow.js hasn't synced any nodes yet\n\n${JSON.stringify(data, null, 2)}`;
+          }
+        } else {
+          result.innerHTML = `<span class="error">✗ FAILED</span>\n\n${JSON.stringify(data, null, 2)}`;
+        }
+      } catch (error) {
+        result.innerHTML = `<span class="error">✗ ERROR</span>\n\n${error.message}`;
+      }
+    }
+
+    async function testFullFlow() {
+      const result = document.getElementById('fullFlowResult');
+      result.innerHTML = '<span class="warning">⏳ Running full flow test...</span>\n\n';
+      
+      let log = '';
+      
+      try {
+        // Step 1: Create a capture
+        log += '1. Creating test capture...\n';
+        const testData = {
+          id: `fulltest-${Date.now()}`,
+          type: 'text',
+          content: 'Full flow test - this should appear in Flow.js',
+          title: 'Full Flow Test',
+          timestamp: new Date().toISOString(),
+          url: 'http://test.com',
+          sourceUrl: 'http://test.com',
+          weight: 5
+        };
+        
+        const captureResp = await fetch(`${API_BASE}/api/capture`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testData)
+        });
+        
+        const captureData = await captureResp.json();
+        
+        if (!captureResp.ok) {
+          throw new Error(`Capture failed: ${JSON.stringify(captureData)}`);
+        }
+        
+        log += `   ✓ Capture created: ${captureData.item.id}\n\n`;
+        
+        // Step 2: Check if it appears in direct captures
+        log += '2. Checking direct captures list...\n';
+        await new Promise(r => setTimeout(r, 500));
+        
+        const directResp = await fetch(`${API_BASE}/api/capture?type=direct`);
+        const directData = await directResp.json();
+        
+        const found = directData.items?.find(item => item.id === captureData.item.id);
+        
+        if (found) {
+          log += `   ✓ Found in direct captures\n\n`;
+        } else {
+          log += `   ✗ NOT found in direct captures (already consumed?)\n\n`;
+        }
+        
+        // Step 3: Wait for Flow.js to poll
+        log += '3. Waiting for Flow.js to poll (2 seconds)...\n';
+        await new Promise(r => setTimeout(r, 2000));
+        
+        // Step 4: Check nodes API
+        log += '4. Checking nodes API...\n';
+        const nodesResp = await fetch(`${API_BASE}/api/nodes`);
+        const nodesData = await nodesResp.json();
+        
+        const nodeFound = nodesData.nodes?.find(n => n.id.includes('fulltest') || n.id === `captured-${testData.id}`);
+        
+        if (nodeFound) {
+          log += `   ✓ Node found in /api/nodes!\n`;
+          log += `   Node ID: ${nodeFound.id}\n\n`;
+        } else {
+          log += `   ✗ Node NOT found in /api/nodes\n`;
+          log += `   Total nodes in API: ${nodesData.nodes?.length || 0}\n\n`;
+        }
+        
+        // Step 5: Final check
+        log += '5. Checking if Flow.js consumed the capture...\n';
+        const directResp2 = await fetch(`${API_BASE}/api/capture?type=direct`);
+        const directData2 = await directResp2.json();
+        
+        const stillThere = directData2.items?.find(item => item.id === captureData.item.id);
+        
+        if (!stillThere) {
+          log += `   ✓ Capture was consumed (Flow.js processed it)\n\n`;
+        } else {
+          log += `   ✗ Capture still in queue (Flow.js didn't process it)\n\n`;
+        }
+        
+        // Summary
+        log += '═══════════════════════════════════════\n';
+        log += 'SUMMARY:\n\n';
+        
+        if (nodeFound && !stillThere) {
+          log += '<span class="success">✓ FLOW WORKING CORRECTLY</span>\n';
+          log += 'The node was created and should be visible in the web app.\n\n';
+          log += '<span class="warning">If you don\'t see it on the canvas:</span>\n';
+          log += '- Check Flow.js browser console for errors\n';
+          log += '- The node might be off-screen\n';
+          log += '- Try refreshing the page\n';
+        } else if (!nodeFound && !stillThere) {
+          log += '<span class="error">✗ FLOW.JS CONSUMED BUT DIDN\'T CREATE NODE</span>\n';
+          log += 'Check Flow.js console for createNodeFromCapture errors\n';
+        } else if (stillThere) {
+          log += '<span class="error">✗ FLOW.JS NOT POLLING</span>\n';
+          log += 'The capture is sitting in the queue but Flow.js isn\'t fetching it.\n';
+          log += 'Check if Flow.js fetchCapturedItems is running.\n';
+        }
+        
+        result.innerHTML = log;
+        
+      } catch (error) {
+        result.innerHTML = log + `\n<span class="error">✗ ERROR</span>\n\n${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
