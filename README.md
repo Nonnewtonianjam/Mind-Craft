@@ -195,14 +195,6 @@ mind-craft/
     └── icon.png
 ```
 
-### Data Flow
-
-```
-Browser Extension → Capture API → Web App Canvas
-     ↓                   ↓              ↓
-Side Panel ← Nodes API ← Sync Effect → Display
-```
-
 ## Use Cases
 
 ### Research & Study
