@@ -6,6 +6,10 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Built with AI](https://img.shields.io/badge/Built_with-Chrome_AI-00897B?style=flat)](https://developer.chrome.com/docs/ai/)
 
+
+<img width="1894" height="908" alt="Screenshot 2026-01-01 155212" src="https://github.com/user-attachments/assets/8852aee2-85cf-47be-9237-1634ccf6a1a5" />
+
+
 ##  What is Mind-Craft?
 
 Mind-Craft is an innovative web application + Chrome extension that revolutionizes how you organize thoughts and create AI-generated content. By combining a visual node-based interface with Chrome's built-in AI APIs (Gemini Nano), it enables seamless capture, organization, and synthesis of information from across the web.
